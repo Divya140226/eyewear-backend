@@ -38,7 +38,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const { createNotification, getAllNotifications } = require('./models/notificationModel');
+
 dotenv.config();
 
 // First initialize `app`
@@ -50,10 +50,11 @@ const server = http.createServer(app);
 // Now set up Socket.IO
 const io = socketIo(server, {
   cors: {
-    origin: "*",
+    origin: '*',  // set your frontend origin
+    methods: ['GET', 'POST']
   }
 });
-
+require('./socket')(io);
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -84,46 +85,6 @@ app.use('/api/upload', authenticate, uploader);
 // Default route
 app.get('/', (req, res) => {
   res.send('Socket server running');
-});
-app.post('/send-notification', async (req, res) => {
-  const { message } = req.body;
-
-  try {
-    // Save to PostgreSQL
-    const newNotification = await createNotification(message);
-
-    // Emit to all connected clients
-    io.emit('notification', newNotification.message);
-
-    res.status(200).json({
-      status: 'Notification sent',
-      notification: newNotification,
-    });
-  } catch (error) {
-    console.error('Error sending notification:', error);
-    res.status(500).json({ error: 'Failed to send notification' });
-  }
-});
-
-// GET: Fetch All Notifications
-app.get('/notifications', async (req, res) => {
-  try {
-    const notifications = await getAllNotifications();
-    res.json(notifications);
-  } catch (error) {
-    console.error('Error fetching notifications:', error);
-    res.status(500).json({ error: 'Failed to fetch notifications' });
-  }
-});
-
-
-// Socket.IO: Handle connection
-io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id);
-
-  socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
-  });
 });
 
 

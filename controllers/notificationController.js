@@ -1,24 +1,21 @@
-const { createNotification, getAllNotifications } = require('../models/notificationModel');
+const notificationModel = require('../models/notificationModel');
 
-// POST /send-notification
-app.post('/send-notification', async (req, res) => {
-  const { message } = req.body;
-
+exports.sendNotification = async (req, res) => {
+  const { toUserId, message, type } = req.body;
   try {
-    // 1. Save to PostgreSQL
-    const newNotification = await createNotification(message);
-
-    // 2. Emit to all connected clients
-    io.emit('notification', newNotification.message);
-
-    res.status(200).json({
-      status: 'Notification sent',
-      notification: newNotification
-    });
+    const newNotification = await notificationModel.insertNotification(toUserId, message, type);
+    res.status(201).json(newNotification);
   } catch (error) {
-    console.error('Error sending notification:', error);
-    res.status(500).json({ error: 'Failed to send notification' });
+    res.status(500).json({ error: error.message });
   }
-});
+};
 
-
+exports.getUserNotifications = async (req, res) => {
+  const toUserId = req.params.userId;
+  try {
+    const notifications = await notificationModel.getNotificationsByUser(toUserId);
+    res.json(notifications);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
