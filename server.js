@@ -70,10 +70,12 @@ const wishlistItemsRoutes = require('./routes/wishlistItemsRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const reviewsRoutes = require('./routes/reviewRoutes');
 const uploader = require('./routes/uploaderRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 const authenticate = require('./middleware/authMiddleware.js');
 
 app.use('/api/auth', authRoutes);
-app.use('/api/product', authenticate, productRoutes);
+app.use('/api/product',authenticate, productRoutes);
 app.use('/api/brands', authenticate, brandsRoutes);
 app.use('/api/categories', authenticate, categoriesRoutes);
 app.use('/api/cartItem', authenticate, cartItemRoutes);
@@ -81,6 +83,8 @@ app.use('/api/wishlistItems', authenticate, wishlistItemsRoutes);
 app.use('/api/order', authenticate, orderRoutes);
 app.use('/api/review', authenticate, reviewsRoutes);
 app.use('/api/upload', authenticate, uploader);
+app.use('/api/chat', authenticate, chatRoutes);
+app.use('/api/notification', authenticate, notificationRoutes);
 
 // Default route
 app.get('/', (req, res) => {
